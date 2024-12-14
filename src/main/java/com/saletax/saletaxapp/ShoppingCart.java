@@ -11,6 +11,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import java.util.Objects;
 import java.util.Scanner;
 
+
 @SpringBootApplication(scanBasePackages = "com.saletax.saletaxapp")
 public class ShoppingCart implements CommandLineRunner {
 
@@ -19,20 +20,19 @@ public class ShoppingCart implements CommandLineRunner {
 
     public static void main(String[] args) {
         SpringApplication.run(ShoppingCart.class, args);
-
-//        Receipt receipt = new Receipt();
-//        BasedOnInput();
-//        receipt.printReceipt();
     }
 
     @Override
     public void run(String... args) throws Exception {
         System.out.println("Hello from the Spring Boot CLI application!");
-        // Add any other business logic here
-
+//      Using with CLI
         getCLI();
+
+//        Using Basic Input Initially
+//        BasedOnInput();
     }
 
+    //    Basic Input Initial for checking taxes and total value
     public void BasedOnInput() {
         //        Input 1:
         System.out.println("Receipt 1");
@@ -65,6 +65,7 @@ public class ShoppingCart implements CommandLineRunner {
         receipt3.printReceipt();
     }
 
+    //    Using with CLI
     public void getCLI() {
 
         Scanner scn = new Scanner(System.in);
@@ -85,11 +86,12 @@ public class ShoppingCart implements CommandLineRunner {
                 isImported = false;
             }
 
+            String[] itemTypes = {"BOOK", "FOOD", "MEDICAL", "OTHERS"};
             System.out.println("What is the item type: press number 0, 1, 2, 3 accordingly");
-            System.out.println("BOOK -> 0");
-            System.out.println("FOOD -> 1");
-            System.out.println("MEDICAL -> 2");
-            System.out.println("OTHERS -> 3");
+            for (int i = 0; i < itemTypes.length; i++) {
+                System.out.println(itemTypes[i] + " -> " + i);
+            }
+
             int productTypeCl = scn.nextInt();
 
             ProductType productType = switch (productTypeCl) {

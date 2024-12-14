@@ -44,14 +44,6 @@ public class Item {
         this.price = price;
     }
 
-    public boolean isImport() {
-        return isImport;
-    }
-
-    public void setImport(boolean anImport) {
-        isImport = anImport;
-    }
-
     public ProductType getType() {
         return type;
     }
@@ -60,29 +52,4 @@ public class Item {
         this.type = type;
     }
 
-    public double calculateSalesTax() {
-        double basicTax = 0;
-
-        if (!isExempt()) {
-            basicTax = price * 0.10;
-        }
-
-        if (isImport()) {
-            basicTax += price * 0.05 ;
-        }
-
-        return roundUp(basicTax);
-    }
-
-    public boolean isExempt() {
-        return type.equals(ProductType.BOOK) || type.equals(ProductType.FOOD) || type.equals(ProductType.MEDICAL);
-    }
-
-    private double roundUp(double taxValue) {
-        return Math.ceil(taxValue * 20.0) / 20.0;
-    }
-
-    public double getTotalPrice() {
-        return price + calculateSalesTax();
-    }
 }
