@@ -1,123 +1,77 @@
 package com.saletax.saletaxapp;
 
-import com.saletax.saletaxapp.constant.ProductType;
+import com.saletax.saletaxapp.io.InputReader;
 import com.saletax.saletaxapp.model.Item;
-import com.saletax.saletaxapp.service.Receipt;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.CommandLineRunner;
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
+import com.saletax.saletaxapp.model.Receipt;
+import com.saletax.saletaxapp.utility.ParseInputUtil;
 
-import java.util.Objects;
-import java.util.Scanner;
+import java.util.Arrays;
+import java.util.List;
 
-
-@SpringBootApplication(scanBasePackages = "com.saletax.saletaxapp")
-public class ShoppingCart implements CommandLineRunner {
-
-    @Autowired
-    private Receipt receipt;
+public class ShoppingCart {
 
     public static void main(String[] args) {
-        SpringApplication.run(ShoppingCart.class, args);
+        consoleInput();
+
+//        For quick testing only
+//        inputValues();
     }
 
-    @Override
-    public void run(String... args) throws Exception {
-        System.out.println("Hello from the Spring Boot CLI application!");
-//      Using with CLI
-        getCLI();
 
-//        Using Basic Input Initially
-//        BasedOnInput();
-    }
+    public static void consoleInput() {
+        InputReader reader = new InputReader();
+        List<String> inputs = reader.readInputs();
 
-    //    Basic Input Initial for checking taxes and total value
-    public void BasedOnInput() {
-        //        Input 1:
-        System.out.println("Receipt 1");
-        Receipt receipt1 = new Receipt();
-        receipt1.addItem(new Item("book", 12.49, false, ProductType.BOOK));
-        receipt1.addItem(new Item("music CD", 14.99, false, ProductType.OTHER));
-        receipt1.addItem(new Item("chocolate bar", 0.85, false, ProductType.FOOD));
+        if (inputs == null || inputs.isEmpty()) {
+            System.out.println("No inputs provided. Please try again.");
+            return;
+        }
 
-        receipt1.printReceipt();
-        System.out.println();
-
-        //        Input 2:
-        System.out.println("Receipt 2");
-        Receipt receipt2 = new Receipt();
-        Item item4 = new Item("chocolates", 10.00, true, ProductType.FOOD);
-        Item item5 = new Item("perfume", 47.50, true, ProductType.OTHER);
-        receipt2.addItem(item4);
-        receipt2.addItem(item5);
-        receipt2.printReceipt();
-        System.out.println();
-
-        //        Input 3:
-        System.out.println("Receipt 3");
-        Receipt receipt3 = new Receipt();
-        receipt3.addItem(new Item("imported bottle of perfume", 27.99, true, ProductType.OTHER));
-        receipt3.addItem(new Item("bottle of perfume", 18.99, false, ProductType.OTHER));
-        receipt3.addItem(new Item("packet of headache pills", 9.75, false, ProductType.MEDICAL));
-        receipt3.addItem(new Item("imported box of chocolates", 11.25, true, ProductType.FOOD));
-
-        receipt3.printReceipt();
-    }
-
-    //    Using with CLI
-    public void getCLI() {
-
-        Scanner scn = new Scanner(System.in);
-
-        while (true) {
-            System.out.println("Enter your item Name: ");
-            String itemName = scn.nextLine();
-
-            System.out.println("Enter your item price: ");
-            double price = scn.nextDouble();
-
-            System.out.println("Is item imported Y/N");
-            String isImportedString = scn.next();
-            boolean isImported;
-            if (isImportedString.equalsIgnoreCase("Y")) {
-                isImported = true;
-            } else {
-                isImported = false;
-            }
-
-            String[] itemTypes = {"BOOK", "FOOD", "MEDICAL", "OTHERS"};
-            System.out.println("What is the item type: press number 0, 1, 2, 3 accordingly");
-            for (int i = 0; i < itemTypes.length; i++) {
-                System.out.println(itemTypes[i] + " -> " + i);
-            }
-
-            int productTypeCl = scn.nextInt();
-
-            ProductType productType = switch (productTypeCl) {
-                case 0 -> ProductType.BOOK;
-                case 1 -> ProductType.FOOD;
-                case 2 -> ProductType.MEDICAL;
-                case 3 -> ProductType.OTHER;
-                default -> null;
-            };
-
-            scn.nextLine();
-
-            Item item = new Item(itemName, price, isImported, productType);
+        Receipt receipt = new Receipt();
+        for (String input : inputs) {
+            Item item = ParseInputUtil.parseTextValue(input);
             receipt.addItem(item);
+        }
 
-            System.out.print("press q to quit application or c to continue");
-            System.out.println();
-            var exit = scn.next();
-            scn.nextLine();
-            if (Objects.equals(exit, "q")) {
-                System.out.println("Exiting the program.");
-                receipt.printReceipt();
-                break;
-            } else if (Objects.equals(exit, "c")) {
-                continue;
+        System.out.print(receipt.printReceipt());
+    }
+
+    public static void inputValues() {
+
+//        Input 1
+        List<String> input1 = Arrays.asList(
+                "1 book at 12.49",
+                "1 music CD at 14.99",
+                "1 chocolate bar at 0.85"
+        );
+
+//        Input 2
+        List<String> input2 = Arrays.asList(
+                "1 imported box of chocolates at 10.00",
+                "1 imported bottle of perfume at 47.50"
+        );
+
+//        Input 3
+        List<String> input3 = Arrays.asList(
+                "1 imported bottle of perfume at 27.99",
+                "1 bottle of perfume at 18.99",
+                "1 packet of headache pills at 9.75",
+                "1 box of imported chocolates at 11.25"
+        );
+
+
+        List<List<String>> inputs = Arrays.asList(input1, input2, input3);
+
+        for (List<String> inputValue : inputs) {
+            Receipt receipt = new Receipt();
+
+            for (String inputData : inputValue) {
+                Item item = ParseInputUtil.parseTextValue(inputData);
+                receipt.addItem(item);
             }
+
+            System.out.print(receipt.printReceipt());
+            System.out.println();
         }
     }
 }

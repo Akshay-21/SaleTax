@@ -1,113 +1,87 @@
 package com.saletax.saletaxapp;
 
-import com.saletax.saletaxapp.constant.ProductType;
 import com.saletax.saletaxapp.model.Item;
-import com.saletax.saletaxapp.service.TaxService;
-import org.junit.jupiter.api.BeforeEach;
+import com.saletax.saletaxapp.model.Receipt;
+import com.saletax.saletaxapp.utility.ParseInputUtil;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import java.util.Arrays;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class SaletaxappApplicationTests {
 
-	private TaxService taxService;
+    @Test
+    void testParseInputUtil() {
+        String input = "1 imported bottle of perfume at 47.50";
+        Item item = ParseInputUtil.parseTextValue(input);
 
-	@BeforeEach
-	public void setUp() {
-		taxService = new TaxService();
-	}
+        assertEquals("imported bottle of perfume", item.getName());
+        assertEquals(47.50, item.getPrice(), 0.01);
+        assertTrue(item.isImported());
+        assertFalse(item.isExempted());
+        assertEquals(1, item.getQuantity());
+    }
 
-	@Test
-	public void testSalesTax_Book() {
-		Item book = new Item("Book", 12.49, false, ProductType.BOOK);
-		assertEquals(0.00, taxService.calculateSalesTax(book), 0.01);
-		assertEquals(12.49, taxService.getTotalPrice(book), 0.01);
-	}
+    @Test
+    void testReceiptGenerationWithInput1() {
+        List<String> input1 = Arrays.asList("1 book at 12.49", "1 music CD at 14.99", "1 chocolate bar at 0.85");
 
-	@Test
-	public void testSalesTax_MusicCD() {
-		Item musicCd = new Item("Music CD", 14.99, false, ProductType.OTHER);
-		assertEquals(1.50, taxService.calculateSalesTax(musicCd), 0.01);
-		assertEquals(16.49, taxService.getTotalPrice(musicCd), 0.01);
-	}
+        Receipt receipt = new Receipt();
+        for (String input : input1) {
+            Item item = ParseInputUtil.parseTextValue(input);
+            receipt.addItem(item);
+        }
 
-	@Test
-	public void testSalesTax_Chocolates() {
-		Item chocolate = new Item("Chocolates", 0.85, false, ProductType.FOOD);
-		assertEquals(0.00, taxService.calculateSalesTax(chocolate), 0.01);
-		assertEquals(0.85, taxService.getTotalPrice(chocolate), 0.01);
-	}
+        String expectedOutput = "1 book: 12.49\n" + "1 music CD: 16.49\n" + "1 chocolate bar: 0.85\n" + "Sales Taxes: 1.50\n" + "Total: 29.83\n";
 
-	@Test
-	public void testSalesTax_ImportedChocolate() {
-		Item importedChocolate = new Item("Imported Box of Chocolates", 10.00, true, ProductType.FOOD);
-		assertEquals(0.50, taxService.calculateSalesTax(importedChocolate), 0.01);
-		assertEquals(10.50, taxService.getTotalPrice(importedChocolate), 0.01);
-	}
+        assertEquals(expectedOutput, receipt.printReceipt());
+    }
 
-	@Test
-	public void testSalesTax_ImportedPerfume() {
-		Item importedPerfume = new Item("Imported Bottle of Perfume", 47.50, true, ProductType.OTHER);
-		assertEquals(7.15, taxService.calculateSalesTax(importedPerfume), 0.01);
-		assertEquals(54.65, taxService.getTotalPrice(importedPerfume), 0.01);
-	}
+    @Test
+    void testReceiptGenerationWithInput2() {
+        List<String> input2 = Arrays.asList("1 imported box of chocolates at 10.00", "1 imported bottle of perfume at 47.50");
 
-	@Test
-	public void testSalesTax_ImportedPerfumeInput3() {
-		Item importedPerfume = new Item("Imported Bottle of Perfume", 27.99, true, ProductType.OTHER);
-		assertEquals(4.20, taxService.calculateSalesTax(importedPerfume), 0.01);
-		assertEquals(32.19, taxService.getTotalPrice(importedPerfume), 0.01);
-	}
+        Receipt receipt = new Receipt();
+        for (String input : input2) {
+            Item item = ParseInputUtil.parseTextValue(input);
+            receipt.addItem(item);
+        }
 
-	@Test
-	public void testSalesTax_Perfume() {
-		Item perfume = new Item("Bottle of Perfume", 18.99, false, ProductType.OTHER);
-		assertEquals(1.90, taxService.calculateSalesTax(perfume), 0.01);
-		assertEquals(20.89, taxService.getTotalPrice(perfume), 0.01);
-	}
+        String expectedOutput = "1 imported box of chocolates: 10.50\n" + "1 imported bottle of perfume: 54.65\n" + "Sales Taxes: 7.65\n" + "Total: 65.15\n";
 
-	@Test
-	public void testSalesTax_HeadachePills() {
-		Item headachePills = new Item("Packet of Headache Pills", 9.75, false, ProductType.MEDICAL);
-		assertEquals(0.00, taxService.calculateSalesTax(headachePills), 0.01);
-		assertEquals(9.75, taxService.getTotalPrice(headachePills), 0.01);
-	}
+        assertEquals(expectedOutput, receipt.printReceipt());
+    }
 
-	@Test
-	public void testSalesTax_ImportedChocolateInput3() {
-		Item importedChocolate = new Item("Imported Box of Chocolates", 11.25, true, ProductType.FOOD);
-		assertEquals(0.6, taxService.calculateSalesTax(importedChocolate), 0.01);
-		assertEquals(11.85, taxService.getTotalPrice(importedChocolate), 0.01);
-	}
+    @Test
+    void testReceiptGenerationWithInput3() {
+        List<String> input3 = Arrays.asList("1 imported bottle of perfume at 27.99", "1 bottle of perfume at 18.99", "1 packet of headache pills at 9.75", "1 box of imported chocolates at 11.25");
 
-//	Test Case for SalesTax
-	@Test
-	public void testTotalSalesTax() {
-		Item importedPerfume = new Item("Imported Bottle of Perfume", 27.99, true, ProductType.OTHER);
-		Item perfume = new Item("Bottle of Perfume", 18.99, false, ProductType.OTHER);
-		Item headachePills = new Item("Packet of Headache Pills", 9.75, false, ProductType.MEDICAL);
-		Item importedChocolate = new Item("Imported Box of Chocolates", 11.25, true, ProductType.FOOD);
+        Receipt receipt = new Receipt();
+        for (String input : input3) {
+            Item item = ParseInputUtil.parseTextValue(input);
+            receipt.addItem(item);
+        }
 
-		double totalSalesTax = taxService.calculateSalesTax(importedPerfume) +
-				taxService.calculateSalesTax(perfume) +
-				taxService.calculateSalesTax(headachePills) +
-				taxService.calculateSalesTax(importedChocolate);
-		assertEquals(6.70, totalSalesTax, 0.01);
-	}
+        String expectedOutput = "1 imported bottle of perfume: 32.19\n" + "1 bottle of perfume: 20.89\n" + "1 packet of headache pills: 9.75\n" + "1 box of imported chocolates: 11.85\n" + "Sales Taxes: 6.70\n" + "Total: 74.68\n";
 
+        assertEquals(expectedOutput, receipt.printReceipt());
+    }
 
-// Test Case for TotalPrice
-	@Test
-	public void testTotalPrice() {
-		Item importedPerfume = new Item("Imported Bottle of Perfume", 27.99, true, ProductType.OTHER);
-		Item perfume = new Item("Bottle of Perfume", 18.99, false, ProductType.OTHER);
-		Item headachePills = new Item("Packet of Headache Pills", 9.75, false, ProductType.MEDICAL);
-		Item importedChocolate = new Item("Imported Box of Chocolates", 11.25, true, ProductType.FOOD);
+    @Test
+    void testIntegrationForAllInputs() {
+        List<List<String>> inputs = Arrays.asList(Arrays.asList("1 book at 12.49", "1 music CD at 14.99", "1 chocolate bar at 0.85"), Arrays.asList("1 imported box of chocolates at 10.00", "1 imported bottle of perfume at 47.50"), Arrays.asList("1 imported bottle of perfume at 27.99", "1 bottle of perfume at 18.99", "1 packet of headache pills at 9.75", "1 box of imported chocolates at 11.25"));
 
-		double totalPrice = taxService.getTotalPrice(importedPerfume) +
-				taxService.getTotalPrice(perfume) +
-				taxService.getTotalPrice(headachePills) +
-				taxService.getTotalPrice(importedChocolate);
-		assertEquals(74.68, totalPrice, 0.01);
-	}
+        List<String> expectedOutputs = Arrays.asList("1 book: 12.49\n1 music CD: 16.49\n1 chocolate bar: 0.85\nSales Taxes: 1.50\nTotal: 29.83\n", "1 imported box of chocolates: 10.50\n1 imported bottle of perfume: 54.65\nSales Taxes: 7.65\nTotal: 65.15\n", "1 imported bottle of perfume: 32.19\n1 bottle of perfume: 20.89\n1 packet of headache pills: 9.75\n1 box of imported chocolates: 11.85\nSales Taxes: 6.70\nTotal: 74.68\n");
+
+        for (int i = 0; i < inputs.size(); i++) {
+            Receipt receipt = new Receipt();
+            for (String input : inputs.get(i)) {
+                Item item = ParseInputUtil.parseTextValue(input);
+                receipt.addItem(item);
+            }
+            assertEquals(expectedOutputs.get(i), receipt.printReceipt());
+        }
+    }
 }

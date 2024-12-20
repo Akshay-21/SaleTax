@@ -1,55 +1,67 @@
 package com.saletax.saletaxapp.model;
 
-import com.saletax.saletaxapp.constant.ProductType;
-import jakarta.persistence.*;
-import lombok.*;
-
-@Setter
-@Getter
-@Entity
-@Table(name = "item")  // Updated table name
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
 public class Item {
+    private final String name;
+    private final double price;
+    private final boolean isImported;
+    private final boolean isExempted;
+    private final int quantity;
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    private String name;
-    private double price;
-    private boolean isImport;
-    private ProductType type;
-
-    public Item(String name, double price, boolean isImport, ProductType type) {
+    public Item(String name, double price, int quantity, boolean isImported, boolean isExempt) {
         this.name = name;
         this.price = price;
-        this.isImport = isImport;
-        this.type = type;
+        this.quantity = quantity;
+        this.isImported = isImported;
+        this.isExempted = isExempt;
     }
 
     public String getName() {
         return name;
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
     public double getPrice() {
         return price;
     }
 
-    public void setPrice(double price) {
-        this.price = price;
+    public boolean isImported() {
+        return isImported;
     }
 
-    public ProductType getType() {
-        return type;
+    public boolean isExempted() {
+        return isExempted;
     }
 
-    public void setType(ProductType type) {
-        this.type = type;
+    public int getQuantity() {
+        return quantity;
     }
 
+
+    public double calculateSalesTax() {
+        double tax = 0.0;
+        if (!isExempted()) {
+            tax += getPrice() * 0.10;
+        }
+        if (isImported()) {
+            tax += getPrice() * 0.05;
+        }
+        return roundUp(tax);
+    }
+
+    public double calculateTotalPrice() {
+        return (price + calculateSalesTax()) * quantity;
+    }
+
+    private double roundUp(double value) {
+        return Math.ceil(value * 20.0) / 20.0;
+    }
+
+
+    public double getTotalPrice() {
+        return getPrice() + calculateSalesTax();
+    }
+
+    @Override
+    public String toString() {
+        return String.format("%d %s: %.2f", quantity, name, calculateTotalPrice());
+    }
 }
